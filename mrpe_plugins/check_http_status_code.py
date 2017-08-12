@@ -2,7 +2,7 @@
 '''Simple script for check http status code.
 exit codes: 0 -- al OK (httpd status code = 200), 2 -- error (connection troubles or http status code not 200)
 mrpe.cfg example: 
-yandex_check /etc/check-mk-agent/site_check.py "http://yandex.ru"
+yandex_check /etc/check-mk-agent/check_http_status_code.py  "http://yandex.ru"
 Have fun!'''
 
 import requests

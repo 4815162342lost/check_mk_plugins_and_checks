@@ -1,0 +1,29 @@
+#!/usr/bin/python
+def inventory_mounts_ro_detect(info):
+    inventory = []
+    devices = []
+    for dev, mp, fstype, options, dump, fsck in info:
+        if fstype not in ['tmpfs'] and dev not in devices:
+            devices.append(dev)
+            inventory.append((mp.replace("\\040(deleted)", ""), None))
+    return inventory
+
+
+def check_mounts_ro_detect(item, opt, info):
+    for dev, mp, fstype, options, dump, fsck in info:
+        if item == mp.replace("\\040(deleted)", ""):
+            opts=options.split(',')
+            if mp.endswith("\\040(deleted)"):
+                return 2, "Mount point detected as stale"
+            if "ro" in opts:
+                return 2, "Filesystem has switched to read-only and is probably corrupted1"+str(options)
+            else:
+                return 0, "Mount options exactly as expected"
+    return 0, "Filesystem not mounted, but it is OK"
+
+
+check_info["mounts_ro_detect"] = {
+    'check_function':          check_mounts_ro_detect,
+    'inventory_function':      inventory_mounts_ro_detect,
+    'service_description':     'Make sure that mount options %s not in ro',
+}

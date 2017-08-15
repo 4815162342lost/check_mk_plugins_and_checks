@@ -13,7 +13,7 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-i', '--ip', type=str, required=True, default=300, help='CrushFTP ip address')
-parser.add_argument('-P', '--ports', type=str, required=True, help='ports which should be listened by application for http_requests')
+parser.add_argument('-P', '--ports', type=str, required=True, help='ports which should be listened by application')
 parser.add_argument('-t', '--timeout', type=int, required=False, default=30, help='timeout for http request to web-interface (default=30)')
 parser.add_argument('-u', '--username', type=str, required=True, help='crushftp account for monitoring ')
 parser.add_argument('-pass', '--password', type=str, required=True, help='password crushftp account for monitoring')
@@ -134,4 +134,3 @@ if critical and warning_or_crit==2:
 if warning or warning_or_crit==1:
     print('Warning: ' + ', '.join(total_message))
     exit(1)
-

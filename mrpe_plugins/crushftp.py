@@ -118,7 +118,11 @@ warning_or_crit=0
 if not critical:
     # warning_or_crit=0 if a all OK, =1 if warning and =2 if crit
     warning_or_crit=0
-    message, critical, warning_or_crit = check_authorization()
+    message, critical_sec, warning_or_crit = check_authorization()
+    if warning_or_crit== 2 and critical_sec == True:
+        critical=True
+    elif warning_or_crit == 1 and critical_sec == True:
+        warning = True
     if message:
         total_message.append(message)
 
@@ -128,6 +132,10 @@ if not warning and not critical:
     exit(0)
 
 if critical and warning_or_crit==2:
+    print('Critical error: ' + ', '.join(total_message))
+    exit(2)
+
+if critical or warning_or_crit==2:
     print('Critical error: ' + ', '.join(total_message))
     exit(2)
 

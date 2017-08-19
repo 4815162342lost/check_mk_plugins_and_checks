@@ -10,6 +10,8 @@ import requests
 import psutil
 import time
 import argparse
+import  ftplib
+import paramiko
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--ip', type=str, required=True, default=300, help='CrushFTP ip address')
@@ -45,20 +47,16 @@ def check_proc():
 def check_uptime(proc_uptime):
     '''check CrushFTP uptime. return Warning if uptime is too low
     alarm level: warning'''
-    message = ''
     if proc_uptime < args.min_alive:
-        message = "process uptime is too low... Only " + str(round(proc_uptime)) + ' sec'
-        return message, 1
+        return "process uptime is too low... Only " + str(round(proc_uptime)) + ' sec', 1
     else:
-        return message, 0
+        return'', 0
 
 
 def check_authorization():
     '''Try to authorized on crushftp and show files (check authorization + web-interface)
     alarm level: critical -- web-interface is not available, warning level -- incorrect login or can not get list of files'''
     message=''
-    #warning_or_crit=0 if a all OK, =1 if warning and =2 if crit
-    critical=False; warning=False; warning_or_crit=0
     params_for_get_cookies = {'username': args.username,
                               'password': args.password,
                               'command': 'login',
@@ -67,39 +65,55 @@ def check_authorization():
     try:
         crash_request_get_cookie = requests.post("http://" + str(args.ip) + ":" + str(args.http_port), data=params_for_get_cookies)
         if crash_request_get_cookie.status_code != requests.codes.ok:
-            message += "can not get cookies of crushftp. Http status code:" + str(crash_request_get_cookie.status_code)
-            return message, 2
+            return "can not get cookies of crushftp. Http status code:" + str(crash_request_get_cookie.status_code), 2
         try:
             params_for_check_file = {'command': 'stat',
                                      'path': '/hello',
                                      'format': 'json',
                                      'c2f': crash_request_get_cookie.cookies['CrushAuth'][-4:]}
         except KeyError:
-            message += "can not get cookies. Http status code: " + str(crash_request_get_cookie.status_code)
-            return message, 1
+            return "can not get cookies. Http status code: " + str(crash_request_get_cookie.status_code), 1
         crash_request_get_info = requests.post("http://" + str(args.ip) + ":" + str(args.http_port), data=params_for_check_file, cookies=crash_request_get_cookie.cookies)
         if crash_request_get_info.text.find("04c9433b") == -1:
-            message += "can not  find file with hash 04c9433b on crushftp server. Http status code: " + str(crash_request_get_info.status_code)
-            return  message, 1
+            return  "can not  find file with hash 04c9433b on crushftp server. Http status code: " + str(crash_request_get_info.status_code), 1
     except:
-        message += "can not get request to CrushFtp. Most likely that connection troubles. "
-        return message, 2
+        return "can not get request to CrushFtp. Most likely that connection troubles. ", 2
     return message, 0
 
 def check_ports(ports):
     '''check all ports which shoul be listened by application (optino -p)
     alarm level: critical'''
-    message=''
     listened_ports_list=[]
     for i in ports:
         listened_ports_list.append(str(i[3][1]))
     listened_ports_set=set(listened_ports_list)
     targer_ports_set=set(args.ports.split(","))
     if len(listened_ports_set.intersection(targer_ports_set))!=len(targer_ports_set):
-        message="port(s) are not listened: " + str(','.join(targer_ports_set-listened_ports_set))
-        return message, 2
+        return "port(s) are not listened: " + str(','.join(targer_ports_set-listened_ports_set)), 2
     else:
-        return message, 0
+        return '', 0
+
+def check_ftp_connection():
+    '''try to authorized on CrushFTP via ssh and compare test file size'''
+    try:
+        crush_ftp_con = ftplib.FTP(host=args.ip)
+        crush_ftp_con.connect(port=21, timeout=args.timeout)
+        crush_ftp_con.login(user=args.username, passwd=args.password)
+        if crush_ftp_con.size('/hello') != 7:
+            return "test file size is wrong! Probably ftp protocol works incorrect!", 1
+    except:
+        return "CrushFTP is not available via ftp protocol", 2
+    return '', 0
+
+def check_sftp_connection():
+    transport = paramiko.Transport((args.ip, 2222))
+    transport.connect(username=args.username, password=args.password)
+    sftp_con = paramiko.SFTPClient.from_transport(transport)
+    if sftp_con.file('/hello', mode='r', bufsize=-1).read().decode().find("Hello")==-1:
+        sftp_con.close()
+        return 1, "file not found"
+    else:
+        return 0, "All OK"
 
 pid, ports, proc_alive_time = check_proc()
 
@@ -110,6 +124,11 @@ if message:
 
 message, alarm_level = check_ports(ports)
 total_alarm_level += alarm_level
+if message:
+    total_message.append(message)
+
+message, alarm_level = check_ftp_connection()
+total_alarm_level+=alarm_level
 if message:
     total_message.append(message)
 

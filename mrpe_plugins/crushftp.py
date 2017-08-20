@@ -88,8 +88,8 @@ def check_authorization(http_port, https_port):
         except KeyError:
             message+= "can not get cookies."
             return message, 2
-        crash_request_get_info = requests.post(authorization_protocol + "://" + str(args.ip) + ":" + str(cookie_port), data=params_for_check_file, cookies=crash_request_get_cookie.cookies, timeout=args.timeout)
-        requests.post(authorization_protocol + "://" + str(args.ip) + ":" + str(cookie_port), data={'command' : 'logout', 'c2f' : crash_request_get_cookie.cookies['CrushAuth'][-4:]}, cookies=crash_request_get_cookie.cookies, timeout=args.timeout)
+        crash_request_get_info = requests.post(authorization_protocol + "://" + str(args.ip) + ":" + str(cookie_port), data=params_for_check_file, cookies=crash_request_get_cookie.cookies, timeout=args.timeout, verify=False)
+        requests.post(authorization_protocol + "://" + str(args.ip) + ":" + str(cookie_port), data={'command' : 'logout', 'c2f' : crash_request_get_cookie.cookies['CrushAuth'][-4:]}, cookies=crash_request_get_cookie.cookies, timeout=args.timeout, verify=False)
         if crash_request_get_info.text.find("04c9433b") == -1:
             message += "can not find file with hash 04c9433b on crushftp server, check {auth} protocol".format(auth=authorization_protocol)
     except:

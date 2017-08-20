@@ -92,7 +92,7 @@ def check_authorization(http_port, https_port):
         if crash_request_get_info.text.find("04c9433b") == -1:
             message += "can not  find file with hash 04c9433b on crushftp server"
     except:
-        return "can not get request to CrushFtp. Most likely that connection troubles. ", 2
+        return "can not get request to CrushFtp web-interface: onnection troubles. ", 2
     if message:
         return message, 2
     return '', 0
@@ -124,7 +124,6 @@ def check_ftp_connection(port_ftp):
             return "test file size is wrong! Probably ftp protocol works incorrect!", 1
         crush_ftp_con.close()
     except:
-        crush_ftp_con.close()
         return "CrushFTP is not available via ftp protocol", 2
     return '', 0
 
@@ -135,11 +134,12 @@ def check_sftp_connection(port_sftp):
         transport.connect(username=args.username, password=args.password)
         sftp_con = paramiko.SFTPClient.from_transport(transport)
         if sftp_con.file('/hello', mode='r', bufsize=-1).read().decode().find("Hello")==-1:
-            sftp_con.close()
             return "test file not found! Probably sftp protocol works incorrect!", 2
+        sftp_con.close()
     except:
-        return "CrushFTP is not available via ftp protocol", 2
+        return "CrushFTP is not available via sftp protocol", 2
     return '', 0
+
 
 def result_processing(func_output):
     if func_output[1]:
@@ -161,11 +161,17 @@ if int(targer_ports_list[0]) or int(targer_ports_list[1]):
     result_processing(check_authorization(int(targer_ports_list[0]), int(targer_ports_list[1])))
 
 if total_alarm_level == 0:
-    print("All OK with Crushftp. pid: {pid}, uptime: {uptime} hours".format(pid=pid, uptime=round(proc_alive_time/60/60,1)))
+    if proc_alive_time/60/60<1:
+        uptime=str(round(proc_alive_time/60,1)) + ' min'
+    elif proc_alive_time/60/60/24<1:
+        uptime = str(round(proc_alive_time /60/60, 1)) + ' hours'
+    else:
+        uptime = str(round(proc_alive_time /60/60/24, 1)) + ' days'
+    print("All OK with Crushftp. pid: {pid}, uptime: ".format(pid=pid) + uptime)
     exit(0)
 else:
     if total_alarm_level>2:
         total_alarm_level=2
     message_for_print= ('Warning: ', 'Critical error: ')
-    print(message_for_print[total_alarm_level-1],'; '.join(total_message))
+    print(message_for_print[total_alarm_level-1],', '.join(total_message))
     exit(total_alarm_level)

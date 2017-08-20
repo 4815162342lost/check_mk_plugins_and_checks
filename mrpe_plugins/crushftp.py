@@ -72,14 +72,14 @@ def check_authorization(http_port, https_port):
                               'encoded': 'true'}
     try:
         if https_port:
-            https_request=requests.get("https://" + str(args.ip) + ":" + str(https_port))
+            https_request=requests.get("https://" + str(args.ip) + ":" + str(https_port), timeout=args.timeout, verify=False)
             if https_request.status_code != requests.codes.ok:
                 message+="https ptotocol is not available. Https status code: " + https_request.status_code
         if http_port:
-            http_request=requests.get("http://" + str(args.ip) + ":" + str(http_port))
+            http_request=requests.get("http://" + str(args.ip) + ":" + str(http_port), timeout=args.timeout)
             if http_request.status_code != requests.codes.ok:
                 message+="http ptotocol is not available. Http status code: " + http_request.status_code
-        crash_request_get_cookie = requests.post(authorization_protocol + "://" + str(args.ip) + ":" + str(cookie_port), data=params_for_get_cookies)
+        crash_request_get_cookie = requests.post(authorization_protocol + "://" + str(args.ip) + ":" + str(cookie_port), data=params_for_get_cookies, timeout=args.timeout, verify=False)
         try:
             params_for_check_file = {'command': 'stat',
                                  'path': '/hello',
@@ -88,11 +88,11 @@ def check_authorization(http_port, https_port):
         except KeyError:
             message+= "can not get cookies."
             return message, 2
-        crash_request_get_info = requests.post(authorization_protocol + "://" + str(args.ip) + ":" + str(cookie_port), data=params_for_check_file, cookies=crash_request_get_cookie.cookies)
+        crash_request_get_info = requests.post(authorization_protocol + "://" + str(args.ip) + ":" + str(cookie_port), data=params_for_check_file, cookies=crash_request_get_cookie.cookies, timeout=args.timeout)
         if crash_request_get_info.text.find("04c9433b") == -1:
-            message += "can not  find file with hash 04c9433b on crushftp server"
+            message += "can not find file with hash 04c9433b on crushftp server, check {auth} protocol".format(auth=authorization_protocol)
     except:
-        return "can not get request to CrushFtp web-interface: onnection troubles. ", 2
+        return "can not get request to CrushFtp web-interface: connection troubles. ", 2
     if message:
         return message, 2
     return '', 0
@@ -117,8 +117,8 @@ def check_ports(ports):
 def check_ftp_connection(port_ftp):
     '''try to authorized on CrushFTP via ssh and compare test file size'''
     try:
-        crush_ftp_con = ftplib.FTP(host=args.ip)
-        crush_ftp_con.connect(port=port_ftp, timeout=args.timeout)
+        crush_ftp_con = ftplib.FTP()
+        crush_ftp_con.connect(host=args.ip, port=port_ftp, timeout=args.timeout)
         crush_ftp_con.login(user=args.username, passwd=args.password)
         if crush_ftp_con.size('/hello') != 7:
             return "test file size is wrong! Probably ftp protocol works incorrect!", 1
@@ -130,10 +130,12 @@ def check_ftp_connection(port_ftp):
 def check_sftp_connection(port_sftp):
     '''try to authorized on CrushFTP via sftp and sownload file'''
     try:
-        transport = paramiko.Transport((args.ip, port_sftp))
-        transport.connect(username=args.username, password=args.password)
-        sftp_con = paramiko.SFTPClient.from_transport(transport)
-        if sftp_con.file('/hello', mode='r', bufsize=-1).read().decode().find("Hello")==-1:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=args.ip, port=port_sftp, username=args.username, password=args.password,timeout=args.timeout)
+        sftp_con = ssh.open_sftp()
+        if sftp_con.file('/hello', mode='r', bufsize=-1).read().decode().find("Hello") == -1:
+            sftp_con.close()
             return "test file not found! Probably sftp protocol works incorrect!", 2
         sftp_con.close()
     except:

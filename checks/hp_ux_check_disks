@@ -1,0 +1,49 @@
+#!/usr/bin/python
+def inventory_hp_ux_physical_disks(info):
+    inventory = []
+    for trash_1, trash_2, trash_3, trash_4, disk_id,  size, measure, status in info:
+            inventory.append((disk_id, None))
+    return inventory
+
+
+def check_hp_ux_physical_disks(item, opt, info):
+    for trash_1, trash_2, trash_3, trash_4, disk_id, size, measure, status in info:
+        if item==disk_id:
+            if status=='OK':
+                return 0, 'All OK with disk. Disk size: {size} {measure}'.format(size = str(size), measure = str(measure))
+            else:
+                return 2, 'The disk probably corrupted! Status is not OK!'
+    return 2, "Disk not found! Probably disk dead! Check it!"
+
+
+check_info["hp_ux_physical_disks"] = {
+    'check_function':          check_hp_ux_physical_disks,
+    'inventory_function':      inventory_hp_ux_physical_disks,
+    'service_description':     'Physical disk %s',
+}
+
+
+#!/usr/bin/python
+def inventory_hp_ux_physical_disks_total(info):
+    inventory = []
+    for disk_name, trash, status in info:
+            inventory.append((disk_name, None))
+    return inventory
+
+
+def check_hp_ux_physical_disks_total(item, opt, info):
+    for disk_name, trash, status in info:
+        if item==disk_name:
+            if status=='OK':
+                return 0, 'All OK with disk.'
+            else:
+                return 2, 'The disk probably corrupted! Status is not OK!'
+    return 2, "Disk not found! Probably disk dead! Check it!"
+
+
+check_info["hp_ux_physical_disks_total"] = {
+    'check_function':          check_hp_ux_physical_disks_total,
+    'inventory_function':      inventory_hp_ux_physical_disks_total,
+    'service_description':     'Total %s',
+}
+

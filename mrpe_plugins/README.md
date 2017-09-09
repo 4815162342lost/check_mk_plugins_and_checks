@@ -8,7 +8,7 @@
 4) Try to login to server via ftp and get test file size. If size of test file wrong -- incident will be raised
 5) Try to authorization via sftp protocol and check test file content  
 
-**before start:**  create test user, create file hello with content 'Hello?' in test user home directory  
+**before start:**  create test user (--username option), create file hello with content 'Hello?' in test user home directory  
 run ./crushftp.py --help for get help  
 **usage example:**  crush_ftp /etc/check_mk/crushftp.py  -i 192.168.1.22 -p 0,443,0,2222 -t 25 -u test_account -pass 'mypassword' -c '/app/CrushFTP8_PC' -a 300  2>/dev/null  
 

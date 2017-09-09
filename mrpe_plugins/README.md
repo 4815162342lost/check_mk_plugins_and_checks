@@ -6,12 +6,8 @@
 5) Try to authorization via sftp protocol and check test file content
 
 #### check_http_status_code.py
-Simple script for check http status code.
-
-exit codes: 0 -- al OK (httpd status code = 200), 2 -- error (connection troubles or http status code not 200)
-
-using: check_http_status_code.py site timeout_in_seconds
-
-mrpe.cfg example:
-
-yandex_check /etc/check-mk-agent/check_http_status_code.py "http://yandex.ru" 10
+Simple script for check http status code.  
+exit codes: 0 -- al OK (httpd status code = 200), 2 -- error (connection troubles or http status code not 200)  
+using: check_http_status_code.py site timeout_in_seconds  
+mrpe.cfg example:  
+yandex_check /etc/check-mk-agent/check_http_status_code.py "http://yandex.ru" 10  

@@ -1,0 +1,46 @@
+#!/usr/bin/python
+import sys
+import requests
+from bs4 import BeautifulSoup
+import argparse
+
+parser=argparse.ArgumentParser()
+parser.add_argument('-u', '--user', dest='weblogic_username', required=True, help='Weblogic\'s login', type=str)
+parser.add_argument('-p', '--password',dest='weblogic_password', required=True, help='Weblogic\'s password', type=str)
+parser.add_argument('-ip', '--ip', dest='weblogic_ip', required=True, help='Weblogic\'s web-interface ip', type=str)
+parser.add_argument('-port', '--port', dest='weblogic_port', required=True, help='Weblogic\'s port', type=int)
+parser.add_argument('-w', '--warning', dest='warning_level', required=False, default= 90, help='warning level in percents', type=int)
+parser.add_argument('-c', '--critical', dest='critical_level', required=False, default=95, help='critical level in percents', type=int)
+args=parser.parse_args()
+
+data={'j_username': args.weblogic_username, 'j_password': args.weblogic_password, 'j_character_encoding': 'UTF-8'}
+url='http://'+args.weblogic_ip+':'+str(args.weblogic_port)
+
+try:
+    session=requests.Session()
+    session.post(url+'/console/j_security_check', data=data, timeout=30)
+    r=session.get(url+'/console/console.portal?_nfpb=true&_pageLabel=ServerMonitoringPerformancePage&handle=com.bea.console.handles.JMXHandle%28%22com.bea%3AName%3DAdminServer%2CType%3DServer%22%29', data=data, timeout=30)
+    if r.status_code != requests.codes.ok:
+        print("Something is wrong with Weblogic... Http-request status code:", r.status_code)
+    soup=BeautifulSoup(r.text, 'lxml')
+    #a=soup.td['width']
+    soup_parser = soup.find('tr', {'id': 'CoreServerServerMonitoringPerformancePortletserverMonitoringPerformance.heapFreePercent_row'})
+    heapusedpercent=100-int(soup_parser.div.get_text())
+    if type(heapusedpercent)!=int:
+        raise TypeError()
+except TypeError:
+    print('Check failed: parsing result not int. Debug information:', heapusedpercent)
+    sys.exit(3)
+except BaseException as e:
+    print('Check was failed. Reason:', e)
+    sys.exit(3)
+
+if heapusedpercent>args.critical_level:
+    print('heap memory is using on {heapusedpercent} % |used_memory={heapusedpercent};{warning_threshold};{critical_threshold};0;100'.format(heapusedpercent=heapusedpercent, warning_threshold=args.warning_level, critical_threshold=args.critical_level))
+    sys.exit(2)
+if heapusedpercent>args.warning_level:
+    print('heap memory is using on {heapusedpercent} % |used_memory={heapusedpercent};{warning_threshold};{critical_threshold};0;100'.format(heapusedpercent=heapusedpercent, warning_threshold=args.warning_level, critical_threshold=args.critical_level))
+    sys.exit(1)
+else:
+    print('heap memory is using on {heapusedpercent} % |used_memory={heapusedpercent};{warning_threshold};{critical_threshold};0;100'.format(heapusedpercent=heapusedpercent, warning_threshold=args.warning_level, critical_threshold=args.critical_level))
+    sys.exit(0)

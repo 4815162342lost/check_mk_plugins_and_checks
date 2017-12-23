@@ -36,11 +36,11 @@ except BaseException as e:
     sys.exit(3)
 
 if heapusedpercent>args.critical_level:
-    print('heap memory is using on {heapusedpercent} % |used_memory={heapusedpercent};{warning_threshold};{critical_threshold};0;100'.format(heapusedpercent=heapusedpercent, warning_threshold=args.warning_level, critical_threshold=args.critical_level))
+    print('CRIT - heap memory is using on {heapusedpercent} % |used_memory={heapusedpercent};{warning_threshold};{critical_threshold};0;100'.format(heapusedpercent=heapusedpercent, warning_threshold=args.warning_level, critical_threshold=args.critical_level))
     sys.exit(2)
 if heapusedpercent>args.warning_level:
-    print('heap memory is using on {heapusedpercent} % |used_memory={heapusedpercent};{warning_threshold};{critical_threshold};0;100'.format(heapusedpercent=heapusedpercent, warning_threshold=args.warning_level, critical_threshold=args.critical_level))
+    print('WARN - heap memory is using on {heapusedpercent} % |used_memory={heapusedpercent};{warning_threshold};{critical_threshold};0;100'.format(heapusedpercent=heapusedpercent, warning_threshold=args.warning_level, critical_threshold=args.critical_level))
     sys.exit(1)
 else:
-    print('heap memory is using on {heapusedpercent} % |used_memory={heapusedpercent};{warning_threshold};{critical_threshold};0;100'.format(heapusedpercent=heapusedpercent, warning_threshold=args.warning_level, critical_threshold=args.critical_level))
+    print('OK - heap memory is using on {heapusedpercent} % |used_memory={heapusedpercent};{warning_threshold};{critical_threshold};0;100'.format(heapusedpercent=heapusedpercent, warning_threshold=args.warning_level, critical_threshold=args.critical_level))
     sys.exit(0)

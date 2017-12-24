@@ -1,6 +1,6 @@
 # Custom various check_mk\Nagios plugins and checks
 
-#### Monitoring RAID Health on HP-UX, working only with hardware RAID
+### Monitoring RAID Health on HP-UX, working only with hardware RAID
 
 **The main idea:**
 We have cron-task on HP-UX server which check Raid HW every 30 min. and save output to */tmp//tmp/check_mk_check_disk_stdout* file.
@@ -29,5 +29,5 @@ So, we will raise saconfig 2 times per hours.
 
 4) Install [hp_ux_check_disks](https://github.com/4815162342lost/check_mk_plugins_and_checks/blob/master/checks/hp_ux_check_disks) on Nagios-server (for example, copy it to /opt/omd/versions/1.2.8p25.cre/share/check_mk/checks directory)
 
-#### Mounts_ro_detect
+### Mounts_ro_detect
 Generate critical error only if disk change current mount options to ro (read-only) or stale state. Standart 'mount options' check generate alerts if any mount options is changed, and it is not good, for example, mount options is changed after SELinux change status. 

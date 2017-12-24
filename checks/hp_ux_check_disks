@@ -1,29 +1,36 @@
 #!/usr/bin/python
-#<<<hp_ux_physical_disks>>>
-#Internal  1I   1   1  0x4815162342481516  252.5 GB   OK
-#Internal  1I   1   2  0x2281488133742069  252.5 GB   OK
-#<<<hp_ux_physical_disks_total>>>
-#Status_ciss9               = OK
 
-def inventory_hp_ux_physical_disks(info):
+def inventory_hp_ux_raid_check(info):
     inventory = []
-    for trash_1, trash_2, trash_3, trash_4, disk_id,  size, measure, status in info:
-            inventory.append((disk_id, None))
+    for line in info:
+        if line[0].startswith('Internal'):
+            inventory.append((line[4], None))
+        if line[0].startswith('/dev'):
+            inventory.append((line[0], None))
     return inventory
 
+def check_hp_ux_raid(item, opt, info):
+    for line in info:
+        if line[0].startswith('timestamp'):
+            last_check_interval=(int(time.time())-int(line[1]))/60
+        elif line[0].startswith('Internal'):
+            if item == line[4]:
+                if line[7] =='OK':
+                    return 0, 'disk size: {size} {measure}'.format(size=line[5], measure=line[6])
+                else:
+                    return 2, 'disk status is not OK! Probably some disk is corrupted! Status: {status}'.format(status=' '.join(line[7:]))
+        elif line[0].startswith('/dev'):
+            if item == line[0]:
+                if last_check_interval > 100:
+                    return 2, 'Can not collect fresh data from server. Last successfully check was {min} min. ago'.format(min=last_check_interval)
+                elif line[2] == 'OK':
+                    return 0, 'all fine with RAID controller'
+                else:
+                    return 2, 'RAID controller status: {status}'.format(status=' '.join(line[2:]))
+    return 2, "Device is not found! Check it!"
 
-def check_hp_ux_physical_disks(item, opt, info):
-    for trash_1, trash_2, trash_3, trash_4, disk_id, size, measure, status in info:
-        if item==disk_id:
-            if status=='OK':
-                return 0, 'All OK with disk. Disk size: {size} {measure}'.format(size = str(size), measure = str(measure))
-            else:
-                return 2, 'The disk probably corrupted! Status is not OK!'
-    return 2, "Disk not found! Probably disk dead! Check it!"
-
-
-check_info["hp_ux_physical_disks"] = {
-    'check_function':          check_hp_ux_physical_disks,
-    'inventory_function':      inventory_hp_ux_physical_disks,
-    'service_description':     'Physical disk %s',
+check_info["hp_ux_raid_check"] = {
+    'check_function':          check_hp_ux_raid,
+    'inventory_function':      inventory_hp_ux_raid_check,
+    'service_description':     'HW Raid %s status',
 }

@@ -7,8 +7,7 @@ We have cron-task on HP-UX server which check Raid HW every 30 min. and save out
 Check_mk_agent raise check_disks plugin which displays */tmp//tmp/check_mk_check_disk_stdout* file and embed it to 'check_mk_agent' output.
 After that, output analyzing on Nagios-server side.
 
-**A:** Why so complex? Why did you create cron-task?
-
+**A:** Why so complex? Why did you create cron-task?  
 **Q:** We can not raise saconfig utility too often, because sometimes we can receive this error:
 ```Tue Oct  3 19:14:00 METDST 2017
 crw-rw-rw-   1 bin        bin          6 0x000000 Jan 31  2001 /dev/ciss0
@@ -36,8 +35,7 @@ Generate critical error only if disk change current mount options to ro (read-on
 
 
 ### Crushftp_check
-[Crushftp](http://www.crushftp.com/) -- proprietary  FTP-server for medium and large business. 
-
+[Crushftp](http://www.crushftp.com/) -- proprietary  FTP-server for medium and large business.  
 **crushftp.py is checking:**
 1) CrushFTP is alive or not (search the process with description java -Ddir=/app/CrushFTP8_PC/, -Ddir can be changed via --installed_dir options).
 2) Check CrushFTP process uptime. If CrushFTP process less than N (--min_alive options) minutes (if CrushFTP service has been crashed and restore automatically) -- warning will be raised 
@@ -45,8 +43,7 @@ Generate critical error only if disk change current mount options to ro (read-on
 4) Try to login to server via ftp and get test file size. If size of test file wrong -- incident will be raised
 5) Try to authorization via sftp protocol and check test file content  
 
-**Instruction**
-
+**Instruction**  
 **Before start:**  create test user (--username option) on CrushFTP, create file hello with content 'Hello?' in test user home directory  
 run ./crushftp.py --help for get help  
 **Usage example:**  crush_ftp /etc/check_mk/crushftp.py  -i 192.168.1.22 -p 0,443,0,2222 -t 25 -u test_account -pass 'mypassword' -c '/app/CrushFTP8_PC' -a 300  2>/dev/null  

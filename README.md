@@ -55,5 +55,4 @@ run ./crushftp.py --help for get help
 **Check_http_status_code.py** -- simple script for check http status code.  
 **Exit codes:**  0 -- al OK (httpd status code = 200), 2 -- error (connection troubles or http status code not 200)  
 **Usage example:**  check_http_status_code.py site timeout_in_seconds  
-**mrpe.cfg example:**  
-yandex_check /etc/check-mk-agent/check_http_status_code.py "http://yandex.ru" 10  
+**mrpe.cfg example:** yandex_check /etc/check-mk-agent/check_http_status_code.py "http://yandex.ru" 10  

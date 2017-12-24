@@ -1,13 +1,10 @@
 ### Several custom checks for check_mk 
-Checks require custom plugin on server side. Custom check should be copied to /opt/omd/versions/1.2.8p25.cre/share/check_mk/checks on Nagios serveer side. Plugin should be copied to plugin directory ($MK_LIBDIR/plugins) on clients.
-
-#### mounts_ro_detect
-Generate critical error only if disk change current mount options to ro (read-only) or stale state. Because filesystem availability checks with 'df'check_mk/checks/df, so, 'unknown' state is mindless. If you not agree with it -- change  **return 0, "Filesystem not mounted, but it is OK"** to  **return 1, "Filesystem is not mounted"**.
-
+This page provides short description and link to  full description for each script.
 
 #### hp_ux_check_disks
-Check physical disk status (disk is OK or not) on HP-UX. The check is analyze output of the saconfig $device command. Tested only on HP-UX 11.31. Requires [hp_ux_check_disk.sh](https://github.com/4815162342lost/check_mk_plugins_and_checks/blob/master/plugins/hp_ux_check_disk.sh) plugin.
+Check hardware RAID status on HP-UX. The check is analyze output of the saconfig $device command. Tested only on HP-UX 11.31.
+[Full descriptions and instruction](https://github.com/4815162342lost/check_mk_plugins_and_checks#monitoring-raid-health-on-hp-ux-working-only-with-hardware-raid)
 
-
-#### hp_ux_check_disks_total_status
-Check RAID total status (OK or not) on HP-UX. Tested only on HP UX 11.31. Requires [hp_ux_check_disk.sh](https://github.com/4815162342lost/check_mk_plugins_and_checks/blob/master/plugins/hp_ux_check_disk.sh) plugin.
+#### mounts_ro_detect
+Generate critical error only if disk change current mount options to *ro* (read-only) or stale state.
+[Full descriptions and instruction](https://github.com/4815162342lost/check_mk_plugins_and_checks#mounts_ro_detect)

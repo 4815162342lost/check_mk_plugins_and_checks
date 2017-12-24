@@ -3,7 +3,7 @@
 #output example
 #<<<hp_ux_raid_check>>>
 #timestamp 1514133060
-#Internal  1I   1   1  0x5000XXXXXXXXXXXX  146.8 GB   OK
+#Internal  1I   1   1  0x5000XXXXXXXXXXXX 146.8 GB   OK
 #Internal  1I   1   2  0x5000XXXXXXXXXXXX 146.8 GB   OK
 #/dev/ciss0_status               = OK
 

@@ -28,3 +28,6 @@ So, we will raise saconfig 2 times per hours.
 3) Create [/usr/lib/check_mk_agent/plugins/hp_ux_check_RAID_HW_plugin.sh](https://github.com/4815162342lost/check_mk_plugins_and_checks/blob/master/plugins/hp_ux_check_RAID_HW_plugin.sh) file on HP-UX and make it executable
 
 4) Install [hp_ux_check_disks](https://github.com/4815162342lost/check_mk_plugins_and_checks/blob/master/checks/hp_ux_check_disks) on Nagios-server (for example, copy it to /opt/omd/versions/1.2.8p25.cre/share/check_mk/checks directory)
+
+#### mounts_ro_detect
+Generate critical error only if disk change current mount options to ro (read-only) or stale state. Because filesystem availability checks with 'df'check_mk/checks/df, so, 'unknown' state is mindless. If you not agree with it -- change  **return 0, "Filesystem not mounted, but it is OK"** to  **return 1, "Filesystem is not mounted"**.

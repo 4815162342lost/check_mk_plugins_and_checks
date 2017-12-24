@@ -1,4 +1,11 @@
 #!/usr/bin/python
+#https://github.com/4815162342lost/check_mk_plugins_and_checks#monitoring-raid-health-on-hp-ux-working-only-with-hardware-raid
+#output example
+#<<<hp_ux_raid_check>>>
+#timestamp 1514133060
+#Internal  1I   1   1  0x5000XXXXXXXXXXXX  146.8 GB   OK
+#Internal  1I   1   2  0x5000XXXXXXXXXXXX 146.8 GB   OK
+#/dev/ciss0_status               = OK
 
 def inventory_hp_ux_raid_check(info):
     inventory = []

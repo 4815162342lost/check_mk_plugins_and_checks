@@ -1,4 +1,9 @@
 #!/usr/local/bin/bash
+#you should create following cron-task (crontab -e):
+#1,31 * * * * /etc/check_mk/hp_ux_check_RAID_HW.sh
+#also please, copy https://github.com/4815162342lost/check_mk_plugins_and_checks/blob/master/plugins/hp_ux_check_RAID_HW_plugin.sh
+#to /usr/lib/check_mk_agent/plugins/ dir.
+#please, send bugs\questions to https://github.com/4815162342lost/check_mk_plugins_and_checks/issues
 >/tmp/check_mk_check_disk_stderr
 >/tmp/check_mk_check_disk_stdout.new
 timestamp=`echo "timestamp $(date +%s)"`

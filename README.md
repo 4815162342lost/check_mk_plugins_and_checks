@@ -30,4 +30,4 @@ So, we will raise saconfig 2 times per hours.
 4) Install [hp_ux_check_disks](https://github.com/4815162342lost/check_mk_plugins_and_checks/blob/master/checks/hp_ux_check_disks) on Nagios-server (for example, copy it to /opt/omd/versions/1.2.8p25.cre/share/check_mk/checks directory)
 
 ### Mounts_ro_detect
-Generate critical error only if disk change current mount options to ro (read-only) or stale state. Standart 'mount options' check generate alerts if any mount options is changed, and it is not good, for example, mount options is changed after SELinux change status. 
+Generate critical error only if disk change current mount options to ro (read-only) or stale state. Standart 'mount options' check generate alerts if any mount options is changed, and it is not good, for example, mount options is changed after SELinux change status. And it is OK fot us, we want to control only 'ro' option.

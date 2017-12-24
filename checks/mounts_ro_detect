@@ -19,7 +19,7 @@ def check_mounts_ro_detect(item, opt, info):
                 return 2, "Filesystem has switched to read-only and is probably corrupted1"+str(options)
             else:
                 return 0, "Mount options exactly as expected"
-    return 0, "Filesystem not mounted, but it is OK"
+    return 3, "Filesystem not mounted!"
 
 
 check_info["mounts_ro_detect"] = {

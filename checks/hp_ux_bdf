@@ -1,0 +1,55 @@
+#!/usr/bin/python
+
+# Filesystem          kbytes    used   avail %used Mounted on
+# /dev/vg00/lvol3    1327104  473136  847648   36% /
+# /dev/vg00/lvol1    1835008  379568 1444136   21% /test
+# /dev/vg00/lvol8    8912896 5325888 3586832   60% /var
+# /dev/vg00/lvol7    7766016 3401872 4330144   44% /usr
+# /dev/vg00/lvol4     524288  159520  364768   30% /tmp
+# /dev/vg_ora/lv_ora
+#                    4194304 2177197 1892833   53% /oracle
+# /dev/vg_ora/lv_not_ora 104857600 34802019 65707150   35% /not_oracle
+# /dev/vg00/lvol6    10108928 5653744 4420992   56% /opt
+# /dev/vg_ora/lv_other_oracle 209715200 115660665 88192498   57% /other_oracle
+# /dev/vg_ora/lv_second_oracle
+#                    314572800 193220901 113767431   63% /second_oracle
+# /dev/vg00/lvol5     229376  157384   71624   69% /home
+# /dev/vg_ora/lv_wrong_oracle
+#                    104235008 3950474 94017004    4% /wrong_oracle
+
+
+def parse_bdf(info):
+    bdf_filesystems=[]
+    need_add=False
+    for line in info:
+        if len(line)!=6:
+            if not need_add:
+                need_add=True
+            else:
+                bdf_filesystems.append(line[-1])
+                need_add=False
+        else:
+            bdf_filesystems.append(line[-1])
+    return bdf_filesystems
+
+def inventory_bdf(parsed):
+    inventory=[]
+    for line in parsed:
+        inventory.append((line, None))
+    return inventory
+
+
+def check_bdf(item, params, parsed):
+    if item in parsed:
+        return 0, 'Filesystem is mounted'
+    else:
+        return 2, 'Filesystem is not mounted'
+
+
+check_info['hp_ux_bdf']={
+'parse_function' : parse_bdf,
+'inventory_function' : inventory_bdf,
+'check_function' : check_bdf,
+'service_description' : 'Check FS_%s mount',
+'group': 'filesystem'
+}

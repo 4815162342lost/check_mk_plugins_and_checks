@@ -24,7 +24,7 @@ for server in servers:
 disconnect()
 exit()
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
-cat root@ubuntu1:~# cat  /opt/omd/sites/nagios2/share/check_mk/checks/check_weblogic
+cat root@ubuntu1:~# cat  /opt/omd/sites/nagios2/share/check_mk/checks/weblogic_check
 #!/usr/bin/python
 
 factory_settings["weblogic_default_levels"] = {
@@ -62,21 +62,22 @@ check_info["weblogic_check"] = {
 }
 
 /opt/omd/sites/nagios2/local/share/check_mk/web/plugins/wato/check_parameters_weblogic_check.py
+group = "checkparams"
 register_check_parameters(
     subgroup_os,
-    "WebLogic",
+    "weblogic_check",
     _("WebLogic"),
     Dictionary(
         elements = [
-            ("Heap memory usage",  Tuple(
-                                title = _("Heap memory usage"),
+            ("heap_usage",  Tuple(
+                                title = _("heap_usage"),
                                 elements = [
                                     Integer(title = _("Warning at"), unit = "ms", default_value = 80),
                                     Integer(title = _("Critical at"), unit = "ms", default_value = 90),
                                 ]),
             ),
-            ("Total threads",  Tuple(
-                                title = _("Total threads"),
+            ("threads_total",  Tuple(
+                                title = _("threads_total"),
                                 elements = [
                                     Integer(title = _("Warning at"), unit = "ms", default_value = 100),
                                     Integer(title = _("Critical at"), unit = "ms", default_value = 150),
@@ -87,3 +88,4 @@ register_check_parameters(
     None,
     match_type = "dict"
 )
+

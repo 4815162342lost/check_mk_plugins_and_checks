@@ -1,0 +1,89 @@
+[vodka@cent_os_1 ~]$ cat /usr/share/check-mk-agent/plugins/weblogic.sh
+#!/bin/bash
+echo '<<<weblogic_check>>>'
+WL_HOME=/home/vodka/Oracle/Middleware/wlserver_10.3
+username='weblogic'
+password='11111111'
+instanse='t3://192.168.1.41:7001'
+
+$WL_HOME/common/bin/wlst.sh /tmp/2.py $username $password $instanse 2>/dev/null | grep check_mk_weblogic | sed "s/check_mk_weblogic //g"
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+[vodka@cent_os_1 ~]$ cat /tmp/2.py
+#!/usr/bin/python
+from java.util import *
+from javax.management import *
+import javax.management.Attribute
+
+connect(sys.argv[1], sys.argv[2], sys.argv[3])
+domainRuntime()
+servers = domainRuntimeService.getServerRuntimes()
+for server in servers:
+    heapusedpercent = 100-int(server.getJVMRuntime().getHeapFreePercent())
+    total_threads=int(server.getJVMRuntime().getTotalNumberOfThreads())
+    print 'check_mk_weblogic', server.getName(), heapusedpercent, total_threads
+disconnect()
+exit()
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+cat root@ubuntu1:~# cat  /opt/omd/sites/nagios2/share/check_mk/checks/check_weblogic
+#!/usr/bin/python
+
+factory_settings["weblogic_default_levels"] = {
+    "heap_usage"   : ( 80, 90 ),
+    "threads_total" : ( 100, 150 )
+}
+
+def inventory_weblogic(info):
+    inventory=[]
+    for server in info:
+        inventory.append((server[0], {}))
+    return inventory
+
+def check_weblogic(item, params, info):
+    warn_heap, crit_heap=params['heap_usage']
+    warn_threads, crit_threads =params['threads_total']
+    for line in info:
+        if line[0].startswith(item):
+            if int(line[1])<warn_heap and int(line[2])<warn_threads:
+                state=0
+            elif int(line[1])>crit_heap or int(line[2])>crit_threads:
+                state=2
+            elif int(line[1])>warn_heap or int(line[2])>warn_threads:
+                state=1
+            perfdata=[('heap_memory_usage', line[1], warn_hea} ,crit_heap,0,100), ('total_threads', line[2], warn_threads,crit_threads,0)]
+            return state, 'heap memory used percentage: {heap}  (warn\crit: {h_warn}\{h_crit}), total threads {threads} (warn\crit: {t_warn}\{t_crit} ))'\
+      .format(heap=line[1], threads=line[2], h_warn=warn_heap, h_crit=crit_heap, t_warn=warn_threads, t_crit=crin_threads), perfdata
+
+check_info["weblogic_check"] = {
+    'check_function'      : check_weblogic,
+    'inventory_function'  : inventory_weblogic,
+     'default_levels_variable': 'weblogic_default_levels',
+    'service_description' : 'WebLogic %s',
+    'has_perfdata'        : True,
+}
+
+/opt/omd/sites/nagios2/local/share/check_mk/web/plugins/wato/check_parameters_weblogic_check.py
+register_check_parameters(
+    subgroup_os,
+    "WebLogic",
+    _("WebLogic"),
+    Dictionary(
+        elements = [
+            ("Heap memory usage",  Tuple(
+                                title = _("Heap memory usage"),
+                                elements = [
+                                    Integer(title = _("Warning at"), unit = "ms", default_value = 80),
+                                    Integer(title = _("Critical at"), unit = "ms", default_value = 90),
+                                ]),
+            ),
+            ("Total threads",  Tuple(
+                                title = _("Total threads"),
+                                elements = [
+                                    Integer(title = _("Warning at"), unit = "ms", default_value = 100),
+                                    Integer(title = _("Critical at"), unit = "ms", default_value = 150),
+                                ]),
+            ),
+        ]
+    ),
+    None,
+    match_type = "dict"
+)

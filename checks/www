@@ -49,9 +49,9 @@ def check_weblogic(item, params, info):
                 state=2
             elif int(line[1])>warn_heap or int(line[2])>warn_threads:
                 state=1
-            perfdata=[('heap_memory_usage', line[1], warn_hea} ,crit_heap,0,100), ('total_threads', line[2], warn_threads,crit_threads,0)]
-            return state, 'heap memory used percentage: {heap}  (warn\crit: {h_warn}\{h_crit}), total threads {threads} (warn\crit: {t_warn}\{t_crit} ))'\
-      .format(heap=line[1], threads=line[2], h_warn=warn_heap, h_crit=crit_heap, t_warn=warn_threads, t_crit=crin_threads), perfdata
+            perfdata=[('heap_memory_usage', line[1], warn_heap ,crit_heap,0,100), ('total_threads', line[2], warn_threads,crit_threads,0)]
+            return state, 'heap memory used percentage: {heap}  (warn\crit: {h_warn}\{h_crit}), total threads {threads} (warn\crit: {t_warn}\{t_crit} ))'.format(heap=line[1], threads=line[2], h_warn=warn_heap, h
+_crit=crit_heap, t_warn=warn_threads, t_crit=crit_threads), perfdata
 
 check_info["weblogic_check"] = {
     'check_function'      : check_weblogic,

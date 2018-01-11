@@ -1,4 +1,4 @@
-[vodka@cent_os_1 ~]$ cat /usr/share/check-mk-agent/plugins/weblogic.sh
+[root@cent_os_1 ~]# cat /usr/share/check-mk-agent/plugins/weblogic.sh 
 #!/bin/bash
 echo '<<<weblogic_check>>>'
 WL_HOME=/home/vodka/Oracle/Middleware/wlserver_10.3
@@ -7,7 +7,9 @@ password='11111111'
 instanse='t3://192.168.1.41:7001'
 
 $WL_HOME/common/bin/wlst.sh /tmp/2.py $username $password $instanse 2>/dev/null | grep check_mk_weblogic | sed "s/check_mk_weblogic //g"
----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+===============================================================================
+
 [vodka@cent_os_1 ~]$ cat /tmp/2.py
 #!/usr/bin/python
 from java.util import *
@@ -23,8 +25,10 @@ for server in servers:
     print 'check_mk_weblogic', server.getName(), heapusedpercent, total_threads
 disconnect()
 exit()
----------------------------------------------------------------------------------------------------------------------------------------------------------
-cat root@ubuntu1:~# cat  /opt/omd/sites/nagios2/share/check_mk/checks/weblogic_check
+
+==================================================================================
+
+root@ubuntu1:~# cat  /opt/omd/sites/nagios2/share/check_mk/checks/weblogic_check
 #!/usr/bin/python
 
 factory_settings["weblogic_default_levels"] = {
@@ -33,16 +37,14 @@ factory_settings["weblogic_default_levels"] = {
 }
 
 def inventory_weblogic(info):
-#    inventory=[]
-#    for server in info:
-#        inventory.append((server[0], "weblogic_default_levels"))
-#        yield(server[0], 'weblogic_default_levels')
-    return [(None, 'weblogic_default_levels')]
+    inventory=[]
+    for server in info:
+        inventory.append((server[0], "weblogic_default_levels"))
+    return inventory
 
-def check_weblogic(_no_item, params, info):
+def check_weblogic(item, params, info):
     for line in info:
-#        if line[0].startswith(item):
-#        if line[0].startswith('AAA'):
+        if line[0] == item:
             warn_heap, crit_heap=params['heap_usage']
             warn_threads, crit_threads =params['threads_total']
             if int(line[1])<warn_heap and int(line[2])<warn_threads:
@@ -52,19 +54,22 @@ def check_weblogic(_no_item, params, info):
             elif int(line[1])>warn_heap or int(line[2])>warn_threads:
                 state=1
             perfdata=[('heap_memory_usage', line[1], warn_heap,crit_heap,0,100), ('total_threads', line[2], warn_threads,crit_threads,0)]
-            return state, 'heap memory used percentage: {heap}  (warn\crit: {h_warn}\{h_crit}), total threads {threads} (warn\crit: {t_warn}\{t_crit} ))'.format(heap=line[1], threads=line[2], h_warn=warn_heap, $
+            return state, 'heap memory used percentage: {heap}  (warn\crit: {h_warn}\{h_crit}), total threads {threads} (warn\crit: {t_warn}\{t_crit})'.format(heap=line[1], threads=line[2], h_warn=warn_heap, h_crit=crit_heap, t_warn=warn_threads, t_crit=crit_threads), perfdata
+    return 3, 'WebLogic is not running'
+
 
 check_info["weblogic_check"] = {
     'check_function'      : check_weblogic,
     'inventory_function'  : inventory_weblogic,
      'default_levels_variable': 'weblogic_default_levels',
-    'service_description' : 'WebLogic s',
+    'service_description' : 'WebLogic %s',
     'has_perfdata'        : True,
     'group': 'weblogic_check'
 }
 
+===================================================================================
 
-/opt/omd/sites/nagios2/local/share/check_mk/web/plugins/wato/check_parameters_weblogic_check.py
+root@ubuntu1:~# cat  /opt/omd/sites/nagios2/local/share/check_mk/web/plugins/wato/check_parameters_weblogic_check.py
 group = "checkparams"
 subgroup_applications = _("Applications, Processes &amp; Services")
 
@@ -74,25 +79,26 @@ register_check_parameters(
     "Weblogic thresholds",
     Dictionary(
         elements = [
-            ("heap_usage",  
+            ("heap_usage",
                      Tuple( title = "Heap memory usage",
                                 elements = [
-                                    Integer(title = "Warning at", default_value = 80),
-                                    Integer(title = "Critical at", default_value = 90),
+                                    Integer(title = "Warning at", unit="%", default_value = 80),
+                                    Integer(title = "Critical at", unit='%', default_value = 90),
                                 ],
                           ),
             ),
-            ("threads_total",  
+            ("threads_total",
                      Tuple( title = "Threads counts",
                                 elements = [
-                                    Integer(title = "Warning at", default_value = 100),
-                                    Integer(title = "Critical at", default_value = 150),
+                                    Integer(title = "Warning at", unit='counts', default_value = 100),
+                                    Integer(title = "Critical at", unit='counts', default_value = 150),
                                 ],
                          ),
             ),
         ]
     ),
-    None,
+    TextAscii(
+        title ="Item name"
+    ),
     match_type = "dict"
 )
-

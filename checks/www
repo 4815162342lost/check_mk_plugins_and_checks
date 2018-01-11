@@ -28,60 +28,67 @@ cat root@ubuntu1:~# cat  /opt/omd/sites/nagios2/share/check_mk/checks/weblogic_c
 #!/usr/bin/python
 
 factory_settings["weblogic_default_levels"] = {
-    "heap_usage"   : ( 80, 90 ),
-    "threads_total" : ( 100, 150 )
+    "heap_usage"   : (80, 90),
+    "threads_total" : (100,150),
 }
 
 def inventory_weblogic(info):
-    inventory=[]
-    for server in info:
-        inventory.append((server[0], {}))
-    return inventory
+#    inventory=[]
+#    for server in info:
+#        inventory.append((server[0], "weblogic_default_levels"))
+#        yield(server[0], 'weblogic_default_levels')
+    return [(None, 'weblogic_default_levels')]
 
-def check_weblogic(item, params, info):
-    warn_heap, crit_heap=params['heap_usage']
-    warn_threads, crit_threads =params['threads_total']
+def check_weblogic(_no_item, params, info):
     for line in info:
-        if line[0].startswith(item):
+#        if line[0].startswith(item):
+#        if line[0].startswith('AAA'):
+            warn_heap, crit_heap=params['heap_usage']
+            warn_threads, crit_threads =params['threads_total']
             if int(line[1])<warn_heap and int(line[2])<warn_threads:
                 state=0
             elif int(line[1])>crit_heap or int(line[2])>crit_threads:
                 state=2
             elif int(line[1])>warn_heap or int(line[2])>warn_threads:
                 state=1
-            perfdata=[('heap_memory_usage', line[1], warn_heap ,crit_heap,0,100), ('total_threads', line[2], warn_threads,crit_threads,0)]
-            return state, 'heap memory used percentage: {heap}  (warn\crit: {h_warn}\{h_crit}), total threads {threads} (warn\crit: {t_warn}\{t_crit} ))'.format(heap=line[1], threads=line[2], h_warn=warn_heap, h
-_crit=crit_heap, t_warn=warn_threads, t_crit=crit_threads), perfdata
+            perfdata=[('heap_memory_usage', line[1], warn_heap,crit_heap,0,100), ('total_threads', line[2], warn_threads,crit_threads,0)]
+            return state, 'heap memory used percentage: {heap}  (warn\crit: {h_warn}\{h_crit}), total threads {threads} (warn\crit: {t_warn}\{t_crit} ))'.format(heap=line[1], threads=line[2], h_warn=warn_heap, $
 
 check_info["weblogic_check"] = {
     'check_function'      : check_weblogic,
     'inventory_function'  : inventory_weblogic,
      'default_levels_variable': 'weblogic_default_levels',
-    'service_description' : 'WebLogic %s',
+    'service_description' : 'WebLogic s',
     'has_perfdata'        : True,
+    'group': 'weblogic_check'
 }
+
 
 /opt/omd/sites/nagios2/local/share/check_mk/web/plugins/wato/check_parameters_weblogic_check.py
 group = "checkparams"
+subgroup_applications = _("Applications, Processes &amp; Services")
+
 register_check_parameters(
-    subgroup_os,
+    subgroup_applications,
     "weblogic_check",
-    _("WebLogic"),
+    "Weblogic thresholds",
     Dictionary(
         elements = [
-            ("heap_usage",  Tuple(
-                                title = _("heap_usage"),
+            ("heap_usage",  
+                     Tuple( title = "Heap memory usage",
                                 elements = [
-                                    Integer(title = _("Warning at"), unit = "ms", default_value = 80),
-                                    Integer(title = _("Critical at"), unit = "ms", default_value = 90),
-                                ]),
+                                    Integer(title = "Warning at", default_value = 80),
+                                    Integer(title = "Critical at", default_value = 90),
+                                ],
+                          ),
             ),
-            ("threads_total",  Tuple(
-                                title = _("threads_total"),
+            ("threads_total",  
+                     Tuple( title = "Threads counts",
                                 elements = [
-                                    Integer(title = _("Warning at"), unit = "ms", default_value = 100),
-                                    Integer(title = _("Critical at"), unit = "ms", default_value = 150),
-                                ]),
+                                    Integer(title = "Warning at", default_value = 100),
+                                    Integer(title = "Critical at", default_value = 150),
+                                ],
+                         ),
             ),
         ]
     ),

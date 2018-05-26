@@ -30,7 +30,7 @@ def check_hp_ux_multipath(item, params, info):
     for line in info:
         if line[2] == item:
             if line[3] == 'online':
-                return 0, 'disk is not offline'
+                return 0, 'disk is online'
             else:
                 return 2, 'disk status: {status}'.format(status=line[3])
     return 3, 'disk disappeared'
@@ -38,11 +38,11 @@ def check_hp_ux_multipath(item, params, info):
 check_info["hp_ux_multipath"] = {
     'check_function':          check_hp_ux_multipath,
     'inventory_function':      inventory_hp_ux_multipath,
-    'service_description':     'Multipath disk %s status',
+    'service_description':     'Multipath disk %s',
 }
 
 check_info["hp_ux_multipath.offfline_only"] = {
     'check_function':          check_hp_ux_multipath_offline_only,
     'inventory_function':      inventory_hp_ux_multipath,
-    'service_description':     'Multipath disk %s status_offline_only',
+    'service_description':     'Multipath disk %s check_offline_only',
 }

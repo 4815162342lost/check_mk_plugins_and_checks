@@ -1,0 +1,66 @@
+[root@server1: 120]# cat /usr/lib/check_mk_agent/plugins/120/network_shares_acces_time.sh
+#!/bin/bash
+echo '<<<nfs_access_time>>>'
+nfs=`sed -n  '/ \(nfs4\?\|cifs\) /s/[^ ]* \([^ ]*\) .*/\1/p' < /proc/mounts | sed 's/\\040/ /g'`
+if [ -n "$nfs" ]
+    then
+    while read line
+    do
+                echo $line `(waitmax -s 2 15 time -p  ls  $line)  2>&1 | grep real`
+    done<<<"$nfs"
+fi
+
+plugin on Nagios-server:
+nfs_access_time_default_levels = (5.00,20.00)
+
+def inventory_nfs(info):
+    inventory=[]
+    for mountpoint, trash, time in info:
+        inventory.append((mountpoint, 'nfs_access_time_default_levels'))
+    return inventory
+
+def measure_nfs_access_time(item, params, info):
+    warn, crit = params
+    if float(crit)>14.9:
+        crit=14.9
+    for line in info:
+        mountpoint=line[0]
+        if mountpoint==item:
+            if len(line)!=3:
+                return (2, 'nfs-shera is not accessible!')
+            mountpoint, trash, time = line
+            if float(time) > float(crit):
+                return (2, 'access time too high:  %s sec.' %time, [('Access time', time, warn, crit, 0.0, 35.0)])
+            elif float(time) > float(warn):
+                return (1, 'access time a little bit high: %s sec.' %time, [('Access time', time, warn, crit, 0.0, 35.0)])
+            else:
+                return (0, 'access time looks normal: %s sec.' %time, [('Access time', time, warn, crit, 0.0, 35.0)])
+    return (3, 'nfs-share is not mounted!')
+
+check_info['nfs_access_time']={
+'inventory_function' : inventory_nfs,
+'check_function' : measure_nfs_access_time,
+'has_perfdata' : True,
+'service_description' : 'NFS\CIFS %s acces time',
+'group': 'nfs_access_time'
+}
+
+WATO-plugin:
+group = "checkparams"
+subgroup_applications = _("Applications, Processes &amp; Services")
+register_check_parameters(
+    subgroup_applications,
+    "nfs_access_time",
+    "NFS-shares access time",
+    Tuple(
+        help = _("Thresholds for nfs-share access iime"),
+        elements = [
+           Float(title = _("Warning at"), unit = _("seconds")),
+           Float(title = _("Critical at"), unit = _("seconds")),
+        ]
+      ),
+    TextAscii(
+        title = _("Item name")
+    ),
+    match_type = "first",
+)

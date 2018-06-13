@@ -1,0 +1,32 @@
+#!/usr/bin/python
+import glob
+import psutil
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-u", "--username", type=str, required=True, help="process owner")
+parser.add_argument("-n", "--process_name", type=str, required=True, help="process name")
+parser.add_argument("-cmd", "--cmd",type=str, required=True, help="any part of cmdline. Searck function will be used")
+parser.add_argument("-w", "--warning", type=float, required=True, help="warning level in percentage")
+parser.add_argument("-c", "--critical", type=float, required=True, help="critical level in percentage")
+parser.add_argument("-l", "--limit", type=int, required=False, help="current limit for maximum opened files", default=4096)
+args=parser.parse_args()
+for proc in psutil.process_iter():
+    if proc.username==args.username and proc.name==args.process_name and str(proc.cmdline).find(args.cmd)!=-1:
+        try:
+            max_limit=proc.rlimit(psutil.RLIMIT_NOFILE)
+        except:
+            max_limit=args.limit
+        warn=int(max_limit*(args.warning/100))
+        crit=int(max_limit*(args.critical/100))
+        files_count=len(glob.glob("/proc/" + str(proc.pid) + "/fd/*"))
+        if int(files_count)>crit:
+            print("Current opened files: {files_count} by process with pid={pid}. Warn/crit: {warn}/{crit} |opened_files={files_count};{warn};{crit}".format(files_count=files_count, pid=proc.pid, warn=warn, crit=crit))
+            exit(2)
+        elif int(files_count)>warn:
+            print("Current opened files: {files_count} by process with pid={pid}. Warn/crit: {warn}/{crit} |opened_files={files_count};{warn};{crit}".format(files_count=files_count, pid=proc.pid, warn=warn, crit=crit))
+            exit(1)
+        else:
+            print("Current opened files: {files_count} by process with pid={pid}. Warn/crit: {warn}/{crit} |opened_files={files_count};{warn};{crit}".format(files_count=files_count, pid=proc.pid, warn=warn, crit=crit))
+            exit(0)
+print("Process is not running")
+exit(3)

@@ -28,7 +28,7 @@ args=parser.parse_args()
 for proc in psutil.process_iter():
     if proc.username()==args.username and proc.name()==args.process_name and str(proc.cmdline()).find(args.cmd)!=-1:
         try:
-            max_limit=int(proc.rlimit(psutil.RLIMIT_NOFILE))
+            max_limit=int(proc.rlimit(psutil.RLIMIT_NOFILE)[0])
         except:
             max_limit=args.limit
         warn=int(max_limit*(args.warning/100))

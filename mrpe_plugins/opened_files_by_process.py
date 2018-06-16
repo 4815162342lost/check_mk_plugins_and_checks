@@ -12,7 +12,7 @@ CMD in our case is telegram-desktop --. We should put any part of cmd to cmd opt
 and total command:
 vodka@vodka-PC:/tmp$ ./1.py --username vodka --process_name telegram-desktop --cmd 'telegram' --warning 70 --critical 90
 Current opened files: 39 by process with pid=7382. Warn/crit: 2867/3686 |opened_files=39;2867;3686
-Warn\crit -- you shoul set it in percentage. Also you can set limit (maximum opened files by process manualy if your kernel doesn not support (psutil.RLIMIT_NOFILE) features)
+Warn\crit -- you should set it in percentage. Also you can set limit (maximum opened files by process manualy if your kernel doesn not support (psutil.RLIMIT_NOFILE) features)
 """
 import glob
 import psutil

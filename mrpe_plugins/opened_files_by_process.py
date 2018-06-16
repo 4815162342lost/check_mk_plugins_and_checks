@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-example: need determine the opened files by telegram program.
+Example: need determine the opened files by telegram program.
 firstly, need find programm via ps command:
 vodka@vodka-PC:/tmp$ ps -Af | grep -i telegram
 vodka     7382  2917  1 11:51 tty2     00:00:31 telegram-desktop --
@@ -9,7 +9,7 @@ vodka@vodka-PC:/tmp$ ps -p 7382 -f
 UID        PID  PPID  C STIME TTY          TIME CMD
 vodka     7382  2917  1 11:51 tty2     00:00:31 telegram-desktop --
 CMD in our case is telegram-desktop --. We should put any part of cmd to cmd option.
-Example:
+and total command:
 vodka@vodka-PC:/tmp$ ./1.py --username vodka --process_name telegram-desktop --cmd 'telegram' --warning 70 --critical 90
 Current opened files: 39 by process with pid=7382. Warn/crit: 2867/3686 |opened_files=39;2867;3686
 Warn\crit -- you shoul set it in percentage. Also you can set limit (maximum opened files by process manualy if your kernel doesn not support (psutil.RLIMIT_NOFILE) features)

@@ -1,0 +1,41 @@
+#!/usr/bin/python
+#plugin
+###!/bin/bash
+#echo "<<<nvidia-smi>>>"
+#nvidia-smi --query-gpu=gpu_name,memory.total,memory.used,utilization.gpu,temperature.gpu,power.draw --format=csv | tail -1 | tr ' ' '_'
+#name, memory.total [MiB], memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W]
+#GeForce GTX 1060 6GB, 6077 MiB, 544 MiB, 1 %, 39, 6.64 W
+
+def parse_nvidia_videocard(info):
+    params_tuple=("model", 'total_mem', 'used_mem', 'gpu_utilization', 'gpu_temp', 'power_consume')
+    parsed={}
+    info="".join(info[0])
+    for idx, current_var in enumerate(info.split(",")):
+#GeForce_GTX_1060_6GB,_P8,_6077_MiB,_587_MiB,_2_%,_39,_6.64_W
+        if idx!=0:
+            parsed[params_tuple[idx]]=current_var.split("_")[1]
+        else:
+            parsed[params_tuple[idx]]=current_var
+    a=open("/tmp/1.txt", 'w')
+    a.write(str(parsed))
+    a.close()
+    return parsed
+    
+def inventory_nvidia_videocard(parsed):
+    if parsed:
+        return [(parsed["model"], None)]
+
+def check_nvidia_videocard(item, params, parsed):
+    perfdata=[]
+    for idx, current_key in enumerate(parsed.keys()):
+        if current_key!="model" or current_key!="total_mem":
+            perfdata.append((current_key, parsed[current_key]))
+    return 0, "GPU utilization: {gpu_utilization}%, Memory: {used}/{total}MB, Temp: {temp}C, Power: {power}W".format(gpu_utilization=parsed['gpu_utilization'], total=parsed['total_mem'],used=parsed['used_mem'], temp=parsed['gpu_temp'], power=parsed['power_consume'] ), perfdata
+
+check_info['nvidia-smi']={
+'parse_function' : parse_nvidia_videocard,
+'inventory_function' : inventory_nvidia_videocard,
+'check_function' : check_nvidia_videocard,
+'has_perfdata' : True,
+'service_description' : 'Nvidia videocard %s'
+}

@@ -16,9 +16,6 @@ def parse_nvidia_videocard(info):
             parsed[params_tuple[idx]]=current_var.split("_")[1]
         else:
             parsed[params_tuple[idx]]=current_var
-    a=open("/tmp/1.txt", 'w')
-    a.write(str(parsed))
-    a.close()
     return parsed
     
 def inventory_nvidia_videocard(parsed):

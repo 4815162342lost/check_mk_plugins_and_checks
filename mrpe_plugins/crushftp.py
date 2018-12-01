@@ -46,6 +46,18 @@ def check_proc():
     exit(2)
 
 
+def get_process_stat(pid):
+    import glob
+    '''get process memory usage, opened files count, cpu usage'''
+    stats_line=''
+    crush_ftp_process=psutil.Process(pid=pid)
+    stats_line+="|cpu_usage={cpu_usage}".format(cpu_usage=crush_ftp_process.cpu_percent(3))
+    stats_line += ";mem_usage={mem_usage}".format(mem_usage=int(crush_ftp_process.memory_info()[0]/1024/1024))
+    stats_line += ";files_opened_count={files_opened_count}".format(files_opened_count=len(glob.glob("/proc/" + str(pid) + '/fd/*')))
+    return stats_line
+
+
+
 def check_uptime(proc_uptime):
     '''check CrushFTP uptime. return Warning if uptime is too low
     alarm level: warning'''
@@ -92,8 +104,8 @@ def check_authorization(http_port, https_port):
         requests.post(authorization_protocol + "://" + str(args.ip) + ":" + str(cookie_port), data={'command' : 'logout', 'c2f' : crash_request_get_cookie.cookies['CrushAuth'][-4:]}, cookies=crash_request_get_cookie.cookies, timeout=args.timeout, verify=False)
         if crash_request_get_info.text.find("04c9433b") == -1:
             message += "can not find file with hash 04c9433b on crushftp server, check {auth} protocol".format(auth=authorization_protocol)
-    except:
-        return "can not get request to CrushFtp web-interface: connection troubles. ", 2
+    except Exception as e:
+        return "can not get request to CrushFtp web-interface: connection troubles. " + str(e), 2
     if message:
         return message, 2
     return '', 0
@@ -124,8 +136,8 @@ def check_ftp_connection(port_ftp):
         if crush_ftp_con.size('/hello') != 7:
             return "test file size is wrong! Probably ftp protocol works incorrect!", 1
         crush_ftp_con.close()
-    except:
-        return "CrushFTP is not available via ftp protocol", 2
+    except Exception as e:
+        return "CrushFTP is not available via ftp protocol " + str(e), 2
     return '', 0
 
 def check_sftp_connection(port_sftp):
@@ -139,8 +151,8 @@ def check_sftp_connection(port_sftp):
             sftp_con.close()
             return "test file not found! Probably sftp protocol works incorrect!", 2
         sftp_con.close()
-    except:
-        return "CrushFTP is not available via sftp protocol", 2
+    except Exception as e:
+        return "CrushFTP is not available via sftp protocol" + str(e), 2
     return '', 0
 
 
@@ -151,8 +163,11 @@ def result_processing(func_output):
         total_alarm_level += func_output[1]
         total_message.append(func_output[0])
 
+
+
 #pid, ports, proc_alive_time = check_proc()
 pid, proc_alive_time = check_proc()
+statistic=get_process_stat(pid)
 
 result_processing(check_uptime(proc_alive_time))
 #result_processing(check_ports(ports))
@@ -170,7 +185,7 @@ if total_alarm_level == 0:
         uptime = str(round(proc_alive_time /60/60, 1)) + ' hours'
     else:
         uptime = str(round(proc_alive_time /60/60/24, 1)) + ' days'
-    print("All OK with Crushftp. pid: {pid}, uptime: ".format(pid=pid) + uptime)
+    print("All OK with Crushftp. pid: {pid}, uptime: {uptime} {stat}".format(pid=pid, uptime=uptime, stat=statistic))
     exit(0)
 else:
     if total_alarm_level>2:

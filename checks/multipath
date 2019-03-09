@@ -332,18 +332,19 @@ def check_multipath(item, params, parsed):
                (aliasinfo, num_active, num_paths)
 
     if isinstance(params, tuple):
-        warn, crit = params
-        warn_num = (warn / 100.0) * num_paths
-        crit_num = (crit / 100.0) * num_paths
-        if num_active < crit_num:
+        num_expected, warn, crit = params
+        warn_num = (warn / 100.0) * num_expected
+        crit_num = (crit / 100.0) * num_expected
+        if num_active > num_expected:
+            state = 1
+        elif num_active < crit_num:
             state = 2
         elif num_active < warn_num:
             state = 1
         else:
             state = 0
-
         if state > 0:
-            infotext += " (warn/crit below %d/%d)" % (warn_num, crit_num)
+            infotext += " (warn/crit below %d/%d, expected paths: %d)" % (warn_num, crit_num, num_expected)
         yield state, infotext
 
     else:
